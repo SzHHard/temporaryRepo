@@ -18,7 +18,7 @@ const Model = {
             return this._completed;
         },
     },
-    pushNewTask(task){
+    pushNewActiveTask(task){
         this.Cards.all.push(task);
         this.Cards.active.push(task);
     }
@@ -46,9 +46,9 @@ const View = {
 
 const Controller = {
     createNewListItem(taskText) {
-        const listItem = View.renderNewListItem(taskText);
-        Model.Cards.pushNewTask(listItem);
-        return listItem;
+        const li1 = View.renderNewListItem(taskText);
+        Model.pushNewActiveTask(li1);
+        return li1;
     },
 }
 
@@ -61,8 +61,7 @@ input_list.addEventListener("keydown", (event) => {
         View.incrementActiveCounter();
 
         const li1 = Controller.createNewListItem(input_list.value); // li1 - new created item
-        //
-
+        // 
         //
         let checkbx = document.createElement('input');
         checkbx.type = 'checkbox';
