@@ -18,14 +18,14 @@ const Model = {
             return this._completed;
         },
     },
-    pushNewActiveTask(task){
+    pushNewActiveTask(task) {
         this.Cards.all.push(task);
         this.Cards.active.push(task);
     }
-    
+
 }
 
-const View = { 
+const View = {
     incrementActiveCounter() {
         Model.Cards.activeCounter++;
         howManyLeft.innerHTML = Model.Cards.activeCounter;
@@ -40,7 +40,7 @@ const View = {
         let li1 = document.createElement('li');
         list.appendChild(li1);
         li1.innerHTML = `<p>${inp}<p>`;
-        return li1; 
+        return li1;
     }
 }
 
@@ -50,60 +50,68 @@ const Controller = {
         Model.pushNewActiveTask(li1);
         return li1;
     },
-}
 
-
-
-input_list.addEventListener("keydown", (event) => {
-
-    if (event.code === "Enter") {
-        
-        View.incrementActiveCounter();
-
-        const li1 = Controller.createNewListItem(input_list.value); // li1 - new created item
-        // 
-        //
+    createCheckboxForLi(li1) {                                   // Это не MVC, но пока так
         let checkbx = document.createElement('input');
         checkbx.type = 'checkbox';
         checkbx.className = 'checkbx';
         li1.appendChild(checkbx);
         checkbx.addEventListener('change', () => {
             if (checkbx.checked) {
-                Cards.completed.push(li1);
-                Cards.active.splice(Cards.active.indexOf(li1), 1);
+                Model.Cards.completed.push(li1);
+                Model.Cards.active.splice(Model.Cards.active.indexOf(li1), 1);
                 li1.firstElementChild.style.opacity = '0.2';
                 li1.firstElementChild.style.textDecoration = 'line-through';
-                doneCounter--;
+                View.decrementActiveCounter();
 
             } else {
-                Cards.active.push(li1);
-                Cards.completed.splice(Cards.completed.indexOf(li1), 1);
+                Model.Cards.active.push(li1);
+                Model.Cards.completed.splice(Model.Cards.completed.indexOf(li1), 1);
                 li1.firstElementChild.style.opacity = '1';
                 li1.firstElementChild.style.textDecoration = 'none';
-                doneCounter++;
+                View.incrementActiveCounter();
             }
-            howManyLeft.innerHTML = doneCounter;
-        })
 
+        })
+        return checkbx;
+    },
+
+    createDeleteButtonForLi(li1) {
         let button1 = document.createElement('button');
         li1.appendChild(button1);
         button1.className = 'del-but';
         //button1.innerText = 'del';
         button1.addEventListener('click', () => {
             if (li1.childNodes[2].checked) {
-                Cards.all.splice(Cards.all.indexOf(li1), 1);
-                Cards.completed.splice(Cards.completed.indexOf(li1), 1); // может она не попала в completed? вроде, попала
+                Model.Cards.all.splice(Model.Cards.all.indexOf(li1), 1);
+                Model.Cards.completed.splice(Model.Cards.completed.indexOf(li1), 1); // может она не попала в completed? вроде, попала
 
             } else {
-                Cards.all.splice(Cards.all.indexOf(li1), 1);
-                Cards.active.splice(Cards.active.indexOf(li1), 1);
-                doneCounter--;
-                howManyLeft.innerHTML = doneCounter;
+                Model.Cards.all.splice(Model.Cards.all.indexOf(li1), 1);
+                Model.Cards.active.splice(Model.Cards.active.indexOf(li1), 1);
+                View.decrementActiveCounter();
             }
 
             li1.remove();
 
         })
+    }
+}
+
+// одна из идей - создать в controller функцию создания checkbox со встроенным eventlistener
+
+input_list.addEventListener("keydown", (event) => {
+
+    if (event.code === "Enter") {
+
+        View.incrementActiveCounter();
+
+        const li1 = Controller.createNewListItem(input_list.value); // li1 - new created item
+        // 
+        //
+        let checkbx = Controller.createCheckboxForLi(li1);
+
+        Controller.createDeleteButtonForLi(li1);
     }
 });
 
@@ -127,8 +135,8 @@ buttonAll.addEventListener('click', () => {
     for (let i = list.children.length - 1; i > 0; i--) {
         list.children[i].remove();
     }
-    for (let i = 0; i < Cards.all.length; i++) {
-        list.appendChild(Cards.all[i]);
+    for (let i = 0; i < Model.Cards.all.length; i++) {
+        list.appendChild(Model.Cards.all[i]);
     }
     buttonAll.classList.add('btnclicked');
     buttonCompleted.classList.remove('btnclicked');
@@ -139,8 +147,8 @@ buttonActive.addEventListener('click', () => {
     for (let i = list.children.length - 1; i > 0; i--) {
         list.children[i].remove();
     }
-    for (let i = 0; i < Cards.active.length; i++) {
-        list.appendChild(Cards.active[i]);
+    for (let i = 0; i < Model.Cards.active.length; i++) {
+        list.appendChild(Model.Cards.active[i]);
     }
     buttonActive.classList.add('btnclicked');
     buttonAll.classList.remove('btnclicked');
@@ -151,8 +159,8 @@ buttonCompleted.addEventListener('click', () => {
     for (let i = list.children.length - 1; i > 0; i--) {
         list.children[i].remove();
     }
-    for (let i = 0; i < Cards.completed.length; i++) {
-        list.appendChild(Cards.completed[i]);
+    for (let i = 0; i < Model.Cards.completed.length; i++) {
+        list.appendChild(Model.Cards.completed[i]);
     }
     buttonCompleted.classList.add('btnclicked');
     buttonAll.classList.remove('btnclicked');
@@ -163,13 +171,13 @@ buttonClearCompleted.addEventListener('click', () => {
     for (let i = list.children.length - 1; i > 0; i--) {
         list.children[i].remove();
     }
-    for (let i = 0; i < Cards.active.length; i++) {
-        list.appendChild(Cards.active[i]);
+    for (let i = 0; i < Model.Cards.active.length; i++) {
+        list.appendChild(Model.Cards.active[i]);
     }
     // перед этим из массива all нужно убрать все приколы, которые есть и здесь
-    Cards._all = Cards.all.filter(obj => {
-        return (Cards.completed.indexOf(obj) === -1);
+    Model.Cards._all = Model.Cards.all.filter(obj => {
+        return (Model.Cards.completed.indexOf(obj) === -1);
     })
-    Cards._completed = [];
+    Model.Cards._completed = [];
 });
 
